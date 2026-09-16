@@ -2,7 +2,7 @@
 
 Independent foldable Android launcher for **Xiaomi 18 Fold / HyperOS 4**.
 
-**v0.5.0** · package `com.duofold.launcher` · [MIT](LICENSE)
+**v0.6.0** · package `com.duofold.launcher` · [MIT](LICENSE)
 
 [中文说明](README.zh-CN.md)
 
@@ -24,9 +24,10 @@ Layout and preferences stay on device. No accounts, analytics, or activation ser
 
 ## Requirements
 
-- Android 12+ (API 31), target API 36
+- **compile / target:** Android 17 (API 37)
+- **minSdk:** 31 (Android 12+) — runs on older foldables while targeting Android 17
 - JDK 17 for local builds
-- Android SDK with platform 36
+- Android SDK Platform 37 (+ Build-Tools 37)
 
 ## Build
 
@@ -64,7 +65,13 @@ See [docs/signing.md](docs/signing.md).
 
 ## CI
 
-GitHub Actions builds debug APK and runs unit tests on every push/PR to `main`.
+GitHub Actions on `main`:
+
+1. Runs unit tests
+2. Builds a **signed release APK** using repository secrets (see [docs/signing.md](docs/signing.md))
+3. Uploads artifact **DuoFold-release**
+
+Pull requests run unit tests only (no signing secrets required).
 
 ## License
 

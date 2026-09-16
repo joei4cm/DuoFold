@@ -2,7 +2,7 @@
 
 面向 **小米 18 Fold / HyperOS 4** 的独立折叠屏 Android 桌面。
 
-**v0.5.0** · 包名 `com.duofold.launcher` · [MIT](LICENSE)
+**v0.6.0** · 包名 `com.duofold.launcher` · [MIT](LICENSE)
 
 [English README](README.md)
 
@@ -24,9 +24,10 @@ DuoFold 是原创 Home 应用，关注折叠连续性：外屏 ↔ 内屏布局�
 
 ## 环境要求
 
-- Android 12+（API 31），target API 36
+- **compile / target：** Android 17（API 37）
+- **minSdk：** 31（Android 12+）— 向下兼容较旧折叠屏，同时面向 Android 17
 - 本地构建需 JDK 17
-- Android SDK（platform 36）
+- Android SDK Platform 37（及 Build-Tools 37）
 
 ## 构建
 
@@ -64,7 +65,13 @@ DuoFold 是原创 Home 应用，关注折叠连续性：外屏 ↔ 内屏布局�
 
 ## CI
 
-向 `main` 推送或提交 PR 时，GitHub Actions 会编译 debug APK 并跑单元测试。
+`main` 上的 GitHub Actions：
+
+1. 跑单元测试
+2. 使用仓库 Secrets 打出**签名正式 APK**（见 [docs/signing.md](docs/signing.md)）
+3. 上传产物 **DuoFold-release**
+
+Pull Request 只跑单元测试（不需要签名 Secrets）。
 
 ## 许可证
 

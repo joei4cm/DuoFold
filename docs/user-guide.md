@@ -1,4 +1,4 @@
-# DuoFold user guide (0.5.0)
+# DuoFold user guide (0.6.0)
 
 1. Install the **release-signed** APK (`./scripts/release-signed.sh`).
 2. Open DuoFold, then set it as default Home in system settings (gear → Set as Home).

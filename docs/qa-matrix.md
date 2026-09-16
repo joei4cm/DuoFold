@@ -1,4 +1,4 @@
-# QA matrix — DuoFold 0.5.0
+# QA matrix — DuoFold 0.6.0
 
 | # | Scenario | Expected |
 |---|---|---|
