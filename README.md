@@ -2,39 +2,70 @@
 
 Independent foldable Android launcher for **Xiaomi 18 Fold / HyperOS 4**.
 
-**v0.5.0** — original clean-room implementation aiming at modern foldable continuity (inspired by public iPhone Duo experiences; unaffiliated).
+**v0.5.0** · package `com.duofold.launcher` · [MIT](LICENSE)
 
-Package: `com.duofold.launcher`. Free MIT. No activation server.
+[中文说明](README.zh-CN.md)
+
+DuoFold is an original Home app focused on fold continuity: cover ↔ inner layout, calm materials, StandBy-style cover mode, fluid editing, widgets, and optional HyperOS Assist gestures. It is **not affiliated with** Apple, Xiaomi, or other launcher products.
 
 ## Features
 
-- 4×6 Home grid, pager, frosted vertical dock
-- Leading canvas when unfolded (non-cover + wide)
-- Hinge soft leaf wipe (optional)
-- Cover landscape **StandBy suite** (clock / canvas / glances)
-- Long-press **edit mode** with finger-follow drag between grid, leading pane, and dock
-- Native AppWidget host + first-party glance cards
-- Optional **Assist**: shade gestures + soft nav (Accessibility global actions only)
-- Opt-in LockSurface after system unlock (does not replace Keyguard)
-- Local layout persistence
+| Area | What you get |
+|---|---|
+| Home | 4×6 grid, horizontal pager, frosted vertical dock |
+| Fold | Leading canvas when unfolded; optional hinge leaf wipe |
+| StandBy | Cover landscape multi-page suite (clock / canvas / glances) |
+| Editing | Long-press edit; finger-follow drag between grid, leading pane, and dock |
+| Widgets | Native AppWidget host + first-party glance cards |
+| Assist | Optional shade swipe + soft Back/Home/Recents (Accessibility global actions only) |
+| LockSurface | Opt-in post-unlock glass clock (does **not** replace system Keyguard) |
 
-Vision & roadmap: [docs/vision-iphone-duo.md](docs/vision-iphone-duo.md)
+Layout and preferences stay on device. No accounts, analytics, or activation server.
 
-## Install (signed release)
+## Requirements
+
+- Android 12+ (API 31), target API 36
+- JDK 17 for local builds
+- Android SDK with platform 36
+
+## Build
+
+Debug:
+
+```sh
+./gradlew :app:assembleDebug :app:testDebugUnitTest
+```
+
+Signed release (keystore **outside** the repo):
 
 ```sh
 ./scripts/generate-release-keystore.sh   # once
 ./scripts/release-signed.sh
-# app/build/outputs/apk/release/app-release.apk
+# → app/build/outputs/apk/release/app-release.apk
 ```
+
+See [docs/signing.md](docs/signing.md).
+
+## Install
+
+1. Install the release APK.
+2. Open DuoFold → **Set as Home** (or system Default apps).
+3. Optional: Settings → shade gestures / soft nav → enable **DuoFold Assist** in Accessibility.
 
 ## Docs
 
 - [Architecture](docs/architecture.md)
-- [Signing](docs/signing.md)
-- [Privacy](PRIVACY.md)
+- [Vision / roadmap](docs/vision-iphone-duo.md)
+- [User guide](docs/user-guide.md)
+- [QA matrix](docs/qa-matrix.md)
 - [Design notes](docs/design-notes.md)
+- [Privacy](PRIVACY.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
+
+## CI
+
+GitHub Actions builds debug APK and runs unit tests on every push/PR to `main`.
 
 ## License
 
-[MIT](LICENSE) — DuoFold contributors. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[MIT](LICENSE) — DuoFold contributors.
