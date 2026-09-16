@@ -18,7 +18,7 @@
     <string name="lock_auth_failed">验证失败</string>
     <string name="lock_auth_unavailable">请先设置系统锁屏或生物识别。</string>
     <string name="about_title">关于 DuoFold</string>
-    <string name="about_body">面向折叠屏的独立桌面。原创 clean-room 实现，灵感来自现代折叠连续性体验，与 Apple 及其他桌面产品无关联。</string>
+    <string name="about_body">面向折叠屏的独立桌面。DuoFold 原创实现，灵感来自现代折叠连续性体验，与 Apple 及其他桌面产品无关联。</string>
     <string name="close">关闭</string>
     <string name="empty_dock">Dock 为空</string>
     <string name="edit_mode">编辑中 — 在网格与 Dock 之间拖动图标，完成后点完成</string>

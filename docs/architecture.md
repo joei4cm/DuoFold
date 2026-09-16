@@ -1,4 +1,4 @@
-# DuoFold architecture (clean-room)
+# DuoFold architecture
 
 Original Kotlin/Compose Home app. Package `com.duofold.launcher`.
 

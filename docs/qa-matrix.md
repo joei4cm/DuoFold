@@ -1,4 +1,4 @@
-# QA matrix — DuoFold 0.2 clean-room
+# QA matrix — DuoFold 0.5.0
 
 | # | Scenario | Expected |
 |---|---|---|

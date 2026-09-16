@@ -18,7 +18,7 @@
     <string name="lock_auth_failed">Authentication failed</string>
     <string name="lock_auth_unavailable">Set a system lock or biometric first.</string>
     <string name="about_title">About DuoFold</string>
-    <string name="about_body">Independent launcher for foldables. Original clean-room implementation inspired by modern foldable continuity — not affiliated with Apple or other launcher products.</string>
+    <string name="about_body">Independent launcher for foldables. Original DuoFold source inspired by modern foldable continuity — not affiliated with Apple or other launcher products.</string>
     <string name="close">Close</string>
     <string name="empty_dock">Dock empty</string>
     <string name="edit_mode">Editing — drag icons between grid and dock, then Done</string>
