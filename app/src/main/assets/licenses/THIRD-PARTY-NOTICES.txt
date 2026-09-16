@@ -1,0 +1,6 @@
+# Notices bundled in the APK
+
+DuoFold runtime dependencies are primarily AndroidX / Kotlin libraries under Apache-2.0.
+See also THIRD_PARTY_NOTICES.md at the repository root.
+
+DuoFold application source is original.
