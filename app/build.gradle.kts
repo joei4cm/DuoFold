@@ -28,13 +28,13 @@ val releaseStoreFile = releaseSigningValues["DUOFOLD_RELEASE_STORE_FILE"]?.let {
 
 android {
     namespace = "com.duofold.launcher"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         applicationId = "com.duofold.launcher"
         minSdk = 31
-        targetSdk = 36
-        versionCode = 5
-        versionName = "0.5.0"
+        targetSdk = 37
+        versionCode = 6
+        versionName = "0.6.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
