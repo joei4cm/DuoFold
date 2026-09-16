@@ -65,13 +65,13 @@ See [docs/signing.md](docs/signing.md).
 
 ## CI
 
-GitHub Actions on `main`:
+| Trigger | Behavior |
+|---|---|
+| Branch push / PR | Code check (`compileDebugKotlin` + unit tests) |
+| Tag `dev-0.7.0` | Signed APK build only (Actions artifact) |
+| Tag `v0.7.0` | Signed APK + GitHub Release |
 
-1. Runs unit tests
-2. Builds a **signed release APK** using repository secrets (see [docs/signing.md](docs/signing.md))
-3. Uploads artifact **DuoFold-release**
-
-Pull requests run unit tests only (no signing secrets required).
+Version comes from the tag (`scripts/resolve-version-from-tag.sh`). Signing secrets: [docs/signing.md](docs/signing.md).
 
 ## License
 

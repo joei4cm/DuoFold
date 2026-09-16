@@ -1,68 +1,84 @@
-name: Android CI
+name: DuoFold CI
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
+    tags:
+      - "v*"
+      - "dev-*"
+      - "dev/*"
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: android-ci-${{ github.workflow }}-${{ github.ref }}
+  group: duofold-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 env:
-  ANDROID_COMPILE_SDK: "37"
   ANDROID_BUILD_TOOLS: "37.0.0"
   ANDROID_PLATFORM_PACKAGE: platforms;android-37.2
 
 jobs:
-  test:
-    name: Unit tests
+  check:
+    name: Code check
+    if: github.ref_type == 'branch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
           cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v3
 
-      - name: Install Android 17 platform + build-tools
+      - name: Install Android 17 SDK
         run: |
           set -euo pipefail
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager --install "${ANDROID_PLATFORM_PACKAGE}" "build-tools;${ANDROID_BUILD_TOOLS}" "platform-tools"
-          # AGP resolves compileSdk=37 as platforms/android-37
           ln -sfn android-37.2 "${ANDROID_HOME}/platforms/android-37"
 
-      - name: Grant execute permission
-        run: chmod +x gradlew scripts/*.sh
+      - run: chmod +x gradlew scripts/*.sh
 
-      - name: Run unit tests
-        run: ./gradlew :app:testDebugUnitTest --stacktrace --no-daemon
+      - name: Compile + unit tests
+        run: ./gradlew :app:compileDebugKotlin :app:testDebugUnitTest --stacktrace --no-daemon
 
-  release:
-    name: Signed release APK
-    needs: test
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+  build-dev:
+    name: Dev build
+    if: github.ref_type == 'tag' && (startsWith(github.ref_name, 'dev-') || startsWith(github.ref_name, 'dev/'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Verify release signing secrets
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android 17 SDK
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager --install "${ANDROID_PLATFORM_PACKAGE}" "build-tools;${ANDROID_BUILD_TOOLS}" "platform-tools"
+          ln -sfn android-37.2 "${ANDROID_HOME}/platforms/android-37"
+
+      - run: chmod +x gradlew scripts/*.sh
+
+      - name: Resolve version from tag
+        run: ./scripts/resolve-version-from-tag.sh "${GITHUB_REF_NAME}"
+
+      - name: Decode release keystore
         env:
           DUOFOLD_RELEASE_KEYSTORE_BASE64: ${{ secrets.DUOFOLD_RELEASE_KEYSTORE_BASE64 }}
           DUOFOLD_RELEASE_STORE_PASSWORD: ${{ secrets.DUOFOLD_RELEASE_STORE_PASSWORD }}
@@ -70,66 +86,114 @@ jobs:
           DUOFOLD_RELEASE_KEY_PASSWORD: ${{ secrets.DUOFOLD_RELEASE_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          missing=0
           for name in DUOFOLD_RELEASE_KEYSTORE_BASE64 DUOFOLD_RELEASE_STORE_PASSWORD DUOFOLD_RELEASE_KEY_ALIAS DUOFOLD_RELEASE_KEY_PASSWORD; do
             if [ -z "${!name}" ]; then
-              echo "Missing GitHub secret: $name"
-              missing=1
+              echo "::error::Missing GitHub secret: $name (see docs/signing.md)"
+              exit 1
             fi
           done
-          if [ "$missing" -ne 0 ]; then
-            echo "::error::Add the DuoFold release keystore secrets (see docs/signing.md), then re-run."
-            exit 1
-          fi
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: gradle
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android 17 platform + build-tools
-        run: |
-          set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager --install "${ANDROID_PLATFORM_PACKAGE}" "build-tools;${ANDROID_BUILD_TOOLS}" "platform-tools"
-          ln -sfn android-37.2 "${ANDROID_HOME}/platforms/android-37"
-
-      - name: Grant execute permission
-        run: chmod +x gradlew scripts/*.sh
-
-      - name: Decode release keystore
-        env:
-          DUOFOLD_RELEASE_KEYSTORE_BASE64: ${{ secrets.DUOFOLD_RELEASE_KEYSTORE_BASE64 }}
-        run: |
-          set -euo pipefail
           KEYSTORE_PATH="${RUNNER_TEMP}/duofold-release.jks"
           echo "${DUOFOLD_RELEASE_KEYSTORE_BASE64}" | base64 -d > "${KEYSTORE_PATH}"
           chmod 600 "${KEYSTORE_PATH}"
           echo "DUOFOLD_RELEASE_STORE_FILE=${KEYSTORE_PATH}" >> "${GITHUB_ENV}"
 
-      - name: Assemble signed release APK
+      - name: Assemble signed APK
         env:
           DUOFOLD_RELEASE_STORE_PASSWORD: ${{ secrets.DUOFOLD_RELEASE_STORE_PASSWORD }}
           DUOFOLD_RELEASE_KEY_ALIAS: ${{ secrets.DUOFOLD_RELEASE_KEY_ALIAS }}
           DUOFOLD_RELEASE_KEY_PASSWORD: ${{ secrets.DUOFOLD_RELEASE_KEY_PASSWORD }}
-        run: ./gradlew :app:assembleRelease --stacktrace --no-daemon
-
-      - name: Verify APK signature
         run: |
           set -euo pipefail
-          APK="app/build/outputs/apk/release/app-release.apk"
-          test -f "$APK"
-          "${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/apksigner" verify --print-certs "$APK"
+          ./gradlew :app:assembleRelease --stacktrace --no-daemon
+          mkdir -p dist
+          OUT="dist/DuoFold-${DUOFOLD_VERSION_NAME}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$OUT"
+          "${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/apksigner" verify --print-certs "$OUT"
 
-      - name: Upload signed release APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DuoFold-release
-          path: app/build/outputs/apk/release/app-release.apk
+          name: DuoFold-dev-${{ env.DUOFOLD_VERSION_NAME }}
+          path: dist/*.apk
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 14
+
+  release:
+    name: Release publish
+    if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android 17 SDK
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager --install "${ANDROID_PLATFORM_PACKAGE}" "build-tools;${ANDROID_BUILD_TOOLS}" "platform-tools"
+          ln -sfn android-37.2 "${ANDROID_HOME}/platforms/android-37"
+
+      - run: chmod +x gradlew scripts/*.sh
+
+      - name: Resolve version from tag
+        run: ./scripts/resolve-version-from-tag.sh "${GITHUB_REF_NAME}"
+
+      - name: Decode release keystore
+        env:
+          DUOFOLD_RELEASE_KEYSTORE_BASE64: ${{ secrets.DUOFOLD_RELEASE_KEYSTORE_BASE64 }}
+          DUOFOLD_RELEASE_STORE_PASSWORD: ${{ secrets.DUOFOLD_RELEASE_STORE_PASSWORD }}
+          DUOFOLD_RELEASE_KEY_ALIAS: ${{ secrets.DUOFOLD_RELEASE_KEY_ALIAS }}
+          DUOFOLD_RELEASE_KEY_PASSWORD: ${{ secrets.DUOFOLD_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in DUOFOLD_RELEASE_KEYSTORE_BASE64 DUOFOLD_RELEASE_STORE_PASSWORD DUOFOLD_RELEASE_KEY_ALIAS DUOFOLD_RELEASE_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: $name (see docs/signing.md)"
+              exit 1
+            fi
+          done
+          KEYSTORE_PATH="${RUNNER_TEMP}/duofold-release.jks"
+          echo "${DUOFOLD_RELEASE_KEYSTORE_BASE64}" | base64 -d > "${KEYSTORE_PATH}"
+          chmod 600 "${KEYSTORE_PATH}"
+          echo "DUOFOLD_RELEASE_STORE_FILE=${KEYSTORE_PATH}" >> "${GITHUB_ENV}"
+
+      - name: Assemble signed APK
+        env:
+          DUOFOLD_RELEASE_STORE_PASSWORD: ${{ secrets.DUOFOLD_RELEASE_STORE_PASSWORD }}
+          DUOFOLD_RELEASE_KEY_ALIAS: ${{ secrets.DUOFOLD_RELEASE_KEY_ALIAS }}
+          DUOFOLD_RELEASE_KEY_PASSWORD: ${{ secrets.DUOFOLD_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          ./gradlew :app:assembleRelease --stacktrace --no-daemon
+          mkdir -p dist
+          OUT="dist/DuoFold-${DUOFOLD_VERSION_NAME}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$OUT"
+          "${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/apksigner" verify --print-certs "$OUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DuoFold-release-${{ env.DUOFOLD_VERSION_NAME }}
+          path: dist/*.apk
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: DuoFold ${{ env.DUOFOLD_VERSION_NAME }}
+          generate_release_notes: true
+          files: dist/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

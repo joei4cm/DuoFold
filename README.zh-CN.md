@@ -65,13 +65,13 @@ DuoFold 是原创 Home 应用，关注折叠连续性：外屏 ↔ 内屏布局�
 
 ## CI
 
-`main` 上的 GitHub Actions：
+| 触发 | 行为 |
+|---|---|
+| 分支 push / PR | 代码检查（`compileDebugKotlin` + 单元测试） |
+| Tag `dev-0.7.0` | 仅编译签名 APK（Actions 产物） |
+| Tag `v0.7.0` | 签名 APK + GitHub Release |
 
-1. 跑单元测试
-2. 使用仓库 Secrets 打出**签名正式 APK**（见 [docs/signing.md](docs/signing.md)）
-3. 上传产物 **DuoFold-release**
-
-Pull Request 只跑单元测试（不需要签名 Secrets）。
+版本号由 tag 解析（`scripts/resolve-version-from-tag.sh`）。签名 Secrets 见 [docs/signing.md](docs/signing.md)。
 
 ## 许可证
 

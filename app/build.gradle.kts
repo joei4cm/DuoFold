@@ -26,6 +26,13 @@ val releaseStoreFile = releaseSigningValues["DUOFOLD_RELEASE_STORE_FILE"]?.let {
     }
 }
 
+/** Tag/CI can override: DUOFOLD_VERSION_NAME=0.7.0 DUOFOLD_VERSION_CODE=7000 */
+fun envOr(name: String, default: String): String =
+    System.getenv(name)?.takeIf { it.isNotBlank() } ?: default
+
+fun envOrInt(name: String, default: Int): Int =
+    System.getenv(name)?.toIntOrNull() ?: default
+
 android {
     namespace = "com.duofold.launcher"
     compileSdk = 37
@@ -33,8 +40,8 @@ android {
         applicationId = "com.duofold.launcher"
         minSdk = 31
         targetSdk = 37
-        versionCode = 6
-        versionName = "0.6.0"
+        versionCode = envOrInt("DUOFOLD_VERSION_CODE", 6)
+        versionName = envOr("DUOFOLD_VERSION_NAME", "0.6.0")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
