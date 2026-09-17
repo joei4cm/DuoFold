@@ -2,7 +2,7 @@
 
 Independent foldable Android launcher for **Xiaomi 18 Fold / HyperOS 4**.
 
-**v0.6.0** · package `com.duofold.launcher` · [MIT](LICENSE)
+**v0.1.0** · package `com.duofold.launcher` · [MIT](LICENSE)
 
 [中文说明](README.zh-CN.md)
 
@@ -68,10 +68,10 @@ See [docs/signing.md](docs/signing.md).
 | Trigger | Behavior |
 |---|---|
 | Branch push / PR | Code check (`compileDebugKotlin` + unit tests) |
-| Tag `dev-0.7.0` | Signed APK build only (Actions artifact) |
-| Tag `v0.7.0` | Signed APK + GitHub Release |
+| Tag `dev-0.1.0_20260917_rev.1` | Signed APK build only (Actions artifact) |
+| Tag `v0.1.0_20260917_rev.1` | Signed APK + GitHub Release |
 
-Version comes from the tag (`scripts/resolve-version-from-tag.sh`). Signing secrets: [docs/signing.md](docs/signing.md).
+Version tag format: `v0.1.x_yyyymmdd_rev.n` (see [docs/signing.md](docs/signing.md)).
 
 ## License
 

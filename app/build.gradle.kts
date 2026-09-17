@@ -40,8 +40,8 @@ android {
         applicationId = "com.duofold.launcher"
         minSdk = 31
         targetSdk = 37
-        versionCode = envOrInt("DUOFOLD_VERSION_CODE", 6)
-        versionName = envOr("DUOFOLD_VERSION_NAME", "0.6.0")
+        versionCode = envOrInt("DUOFOLD_VERSION_CODE", 2026091701)
+        versionName = envOr("DUOFOLD_VERSION_NAME", "0.1.0_20260917_rev.1")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {

@@ -63,19 +63,25 @@ gh secret set DUOFOLD_RELEASE_KEY_PASSWORD -R joei4cm/DuoFold -b "$DUOFOLD_RELEA
 | Event | Job | Output |
 |---|---|---|
 | Branch push / PR | Code check | `compileDebugKotlin` + unit tests |
-| Tag `dev-0.7.0` or `dev/0.7.0` | Dev build | Signed APK artifact only (`DuoFold-0.7.0-dev.apk`) |
-| Tag `v0.7.0` | Release publish | Signed APK + GitHub Release |
+| Tag `dev-0.1.0_20260917_rev.1` | Dev build | Signed APK artifact only |
+| Tag `v0.1.0_20260917_rev.1` | Release publish | Signed APK + GitHub Release |
 
-Version mapping (`scripts/resolve-version-from-tag.sh`):
+**Tag format (canonical):** `v0.1.x_yyyymmdd_rev.n`
 
-- `v1.2.3` → `versionName=1.2.3`, `versionCode=1002003`
-- `dev-1.2.3` → `versionName=1.2.3-dev`, `versionCode=1002003`
+| Part | Meaning | Example |
+|---|---|---|
+| `0.1.x` | Product line + patch | `0.1.0` |
+| `yyyymmdd` | Build calendar day | `20260917` |
+| `rev.n` | Same-day revision (0–99) | `rev.1` |
 
-Examples:
+Mapping (`scripts/resolve-version-from-tag.sh`):
+
+- `v0.1.0_20260917_rev.1` → `versionName=0.1.0_20260917_rev.1`, `versionCode=2026091701` (`yyyymmdd*100 + rev`)
+- `dev-0.1.0_20260917_rev.1` → `versionName=…-dev`, same `versionCode`
 
 ```sh
-git tag v0.7.0 && git push origin v0.7.0          # publish
-git tag dev-0.7.1 && git push origin dev-0.7.1    # build only
+git tag v0.1.0_20260917_rev.1 && git push origin v0.1.0_20260917_rev.1
+git tag dev-0.1.0_20260917_rev.2 && git push origin dev-0.1.0_20260917_rev.2
 ```
 
 ## Verify

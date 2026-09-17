@@ -2,7 +2,7 @@
 
 面向 **小米 18 Fold / HyperOS 4** 的独立折叠屏 Android 桌面。
 
-**v0.6.0** · 包名 `com.duofold.launcher` · [MIT](LICENSE)
+**v0.1.0** · 包名 `com.duofold.launcher` · [MIT](LICENSE)
 
 [English README](README.md)
 
@@ -68,10 +68,10 @@ DuoFold 是原创 Home 应用，关注折叠连续性：外屏 ↔ 内屏布局�
 | 触发 | 行为 |
 |---|---|
 | 分支 push / PR | 代码检查（`compileDebugKotlin` + 单元测试） |
-| Tag `dev-0.7.0` | 仅编译签名 APK（Actions 产物） |
-| Tag `v0.7.0` | 签名 APK + GitHub Release |
+| Tag `dev-0.1.0_20260917_rev.1` | 仅编译签名 APK（Actions 产物） |
+| Tag `v0.1.0_20260917_rev.1` | 签名 APK + GitHub Release |
 
-版本号由 tag 解析（`scripts/resolve-version-from-tag.sh`）。签名 Secrets 见 [docs/signing.md](docs/signing.md)。
+版本 tag 格式：`v0.1.x_yyyymmdd_rev.n`（见 [docs/signing.md](docs/signing.md)）。
 
 ## 许可证
 
