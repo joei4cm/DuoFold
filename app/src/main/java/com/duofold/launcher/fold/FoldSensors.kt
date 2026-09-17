@@ -20,14 +20,8 @@ class FoldSensors(context: Context) : SensorEventListener {
         private set
     var panel by mutableStateOf(PanelKind.Unknown)
         private set
-
-    /** 0 = fully open (flat), 1 = closed-looking for our wipe effect. */
-    val foldAmount: Float
-        get() {
-            val open = hingeDegrees.coerceIn(0f, 180f)
-            // Map 180° open → 0 effect, ~0–30° closed → strong effect.
-            return ((180f - open) / 150f).coerceIn(0f, 1f)
-        }
+    var foldAmount by mutableFloatStateOf(0f)
+        private set
 
     fun start() {
         refreshPanel()
@@ -46,7 +40,11 @@ class FoldSensors(context: Context) : SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         val values = event?.values ?: return
-        if (values.isNotEmpty()) hingeDegrees = values[0]
+        if (values.isEmpty()) return
+        hingeDegrees = values[0]
+        val open = hingeDegrees.coerceIn(0f, 180f)
+        val raw = ((175f - open) / 145f).coerceIn(0f, 1f)
+        foldAmount += (raw - foldAmount) * 0.22f
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit

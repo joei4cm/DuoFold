@@ -178,14 +178,19 @@ fun HomeRoot(
     }
 
     val effectTarget = if (foldAnimationEnabled) foldAmount else 0f
-    val effect by animateFloatAsState(effectTarget, animationSpec = DuoMotion.soft, label = "fold")
+    val effect by animateFloatAsState(effectTarget, animationSpec = DuoMotion.fold, label = "fold")
     val draggingKey = drag?.appKey
+    val cover = panel == PanelKind.Cover
+    val sidePad = if (cover) 10.dp else 16.dp
+    val topPad = if (cover) 4.dp else 8.dp
+    val clockSize = if (cover) 34.sp else 30.sp
 
-    BoxWithConstraints(
-        Modifier
-            .fillMaxSize()
-            .background(homeBackdropBrush())
+    FoldAtmosphere(
+        foldAmount = effect,
+        panel = panel,
+        enabled = foldAnimationEnabled,
     ) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
         val dual = useExpandedWorkspace(panel, maxWidth.value)
         LaunchedEffect(dual, pager.currentPage) {
             dropRegions.clear()
@@ -202,23 +207,18 @@ fun HomeRoot(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
-                .graphicsLayer {
-                    alpha = 1f - effect * 0.28f
-                    rotationY = -effect * 22f
-                    cameraDistance = 22f * density
-                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)
-                }
-                .padding(start = 14.dp, end = 10.dp, top = 6.dp, bottom = 10.dp)
+                .padding(start = sidePad, end = if (cover) 8.dp else 12.dp, top = topPad, bottom = 10.dp)
         ) {
             Row(
-                Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                Modifier.fillMaxWidth().padding(bottom = if (cover) 2.dp else 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     clock,
-                    color = Color.White,
-                    fontSize = 28.sp,
+                    color = Color.White.copy(alpha = 0.96f),
+                    fontSize = clockSize,
                     fontWeight = FontWeight.Light,
+                    letterSpacing = (-0.5).sp,
                     modifier = Modifier.weight(1f),
                 )
                 if (editing) {
@@ -253,36 +253,43 @@ fun HomeRoot(
 
             Row(Modifier.weight(1f).fillMaxWidth()) {
                 if (dual) {
-                    WorkspaceCanvas(
-                        cells = layout.leading,
-                        pageWidgets = layout.widgets.filter { it.page == -1 },
-                        apps = apps,
-                        editing = editing,
-                        selectedKey = selectedKey,
-                        draggingKey = draggingKey,
-                        widgets = widgets,
-                        modifier = Modifier.weight(1f).fillMaxHeight().padding(end = 10.dp),
-                        onLaunch = onLaunch,
-                        onLongPressEmpty = {
-                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                            editing = true
-                        },
+                    GlassPanel(
+                        modifier = Modifier.weight(1f).fillMaxHeight().padding(end = 4.dp),
+                        radius = 24.dp,
+                        tone = GlassTone.Leading,
+                    ) {
+                        WorkspaceCanvas(
+                            cells = layout.leading,
+                            pageWidgets = layout.widgets.filter { it.page == -1 },
+                            apps = apps,
+                            editing = editing,
+                            selectedKey = selectedKey,
+                            draggingKey = draggingKey,
+                            widgets = widgets,
+                            modifier = Modifier.fillMaxSize().padding(8.dp),
+                            onLaunch = onLaunch,
+                            onLongPressEmpty = {
+                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                editing = true
+                            },
                             onDragStart = ::beginDrag,
                             onDrag = ::moveDrag,
                             onDragEnd = { endDrag(dual, pager.currentPage) },
                             onRegisterDrop = { cell, coords -> registerDrop(DropZone.Leading(cell), coords) },
-                        onTapCell = { cell ->
-                            val key = selectedKey
-                            if (editing && drag == null && key != null) {
-                                onLayoutChange(LayoutEditing.placeOnLeading(layout, cell, key))
-                                selectedKey = null
-                            }
-                        },
-                        onRemoveWidget = widgets::delete,
-                    )
+                            onTapCell = { cell ->
+                                val key = selectedKey
+                                if (editing && drag == null && key != null) {
+                                    onLayoutChange(LayoutEditing.placeOnLeading(layout, cell, key))
+                                    selectedKey = null
+                                }
+                            },
+                            onRemoveWidget = widgets::delete,
+                        )
+                    }
+                    HingeGroove(Modifier.padding(horizontal = 4.dp))
                 }
 
-                Column(Modifier.weight(if (dual) 1.12f else 1f).fillMaxHeight()) {
+                Column(Modifier.weight(if (dual) 1.18f else 1f).fillMaxHeight()) {
                     HorizontalPager(state = pager, modifier = Modifier.weight(1f).fillMaxWidth()) { page ->
                         val cells = layout.pages.getOrNull(page) ?: List(HomeLayout.CELLS) { null }
                         WorkspaceCanvas(
@@ -322,7 +329,10 @@ fun HomeRoot(
                     editing = editing,
                     selectedKey = selectedKey,
                     draggingKey = draggingKey,
-                    modifier = Modifier.width(78.dp).fillMaxHeight().padding(start = 8.dp),
+                    modifier = Modifier
+                        .width(if (cover) 72.dp else 84.dp)
+                        .fillMaxHeight()
+                        .padding(start = if (dual) 8.dp else 10.dp),
                     onLaunch = onLaunch,
                     onDragStart = ::beginDrag,
                     onDrag = ::moveDrag,
@@ -445,6 +455,7 @@ fun HomeRoot(
             if (showAllApps) scope.launch { /* keep current page */ }
         }
     }
+    } // FoldAtmosphere
 }
 
 @Composable
@@ -661,7 +672,7 @@ private fun DockColumn(
     onRegisterDrop: (Int, LayoutCoordinates) -> Unit,
     onTapSlot: (Int) -> Unit,
 ) {
-    GlassPanel(modifier = modifier, radius = 26.dp) {
+    GlassPanel(modifier = modifier, radius = 28.dp, tone = GlassTone.Dock) {
         Column(
             Modifier
                 .fillMaxSize()
